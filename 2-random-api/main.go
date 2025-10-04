@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"math"
 	"math/rand/v2"
 	"net/http"
 )
@@ -21,13 +20,20 @@ func main() {
 		Handler: serveMux,
 	}
 
-	server.ListenAndServe()
+	fmt.Println("Server started at port: ", PORT)
+
+	err := server.ListenAndServe()
+
+	if err != nil {
+		panic(err.Error())
+	}
 
 }
 
 func random(rw http.ResponseWriter, request *http.Request) {
-	randomFrom1To6 := math.Ceil(rand.Float64() * 6)
-	result := fmt.Sprintf("%.0f", randomFrom1To6)
+	fmt.Println("Got request ", *request)
+	randomFrom1To6 := rand.IntN(6) + 1
+	result := fmt.Sprintf("%d", randomFrom1To6)
 
 	rw.Write([]byte(result))
 }
