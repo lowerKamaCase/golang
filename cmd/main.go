@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"lowerkamacase/golang/configs"
 	"lowerkamacase/golang/internal/auth"
+	"lowerkamacase/golang/internal/verify"
 	"net/http"
 )
 
@@ -15,6 +16,10 @@ func main() {
 	serveMux := http.NewServeMux()
 
 	auth.NewAuthHandler(serveMux, auth.AuthHandlerDeps{
+		Config: conf,
+	})
+
+	verify.NewVerifierHandler(serveMux, verify.VerifierDeps{
 		Config: conf,
 	})
 
