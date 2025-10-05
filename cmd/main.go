@@ -2,16 +2,21 @@ package main
 
 import (
 	"fmt"
-	"lowerkamacase/golang/internal/random"
+	"lowerkamacase/golang/configs"
+	"lowerkamacase/golang/internal/auth"
 	"net/http"
 )
 
 const PORT = 8087
 
 func main() {
+	conf := configs.LoadConfig()
+
 	serveMux := http.NewServeMux()
 
-	serveMux.HandleFunc("/random", random.Random)
+	auth.NewAuthHandler(serveMux, auth.AuthHandlerDeps{
+		Config: conf,
+	})
 
 	Addr := fmt.Sprintf(":%d", PORT)
 
