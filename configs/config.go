@@ -22,9 +22,9 @@ type AuthConfig struct {
 }
 
 type EmailConfig struct {
-	Email string `json:"email"`
-	Password string `json:"password"`
-	Address string `json:"address"`
+	Email string
+	Password string
+	Address string
 }
 
 func LoadConfig() *Config {

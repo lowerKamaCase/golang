@@ -12,6 +12,12 @@ const PORT = 8087
 
 func main() {
 	conf := configs.LoadConfig()
+	fmt.Println(conf)
+
+	if conf == nil {
+		fmt.Print("Config cannot be nil")
+		panic("Config cannot be nil")
+	}
 
 	serveMux := http.NewServeMux()
 

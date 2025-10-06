@@ -3,6 +3,7 @@ package auth
 import (
 	"fmt"
 	"lowerkamacase/golang/configs"
+	"lowerkamacase/golang/pkg/req"
 	"lowerkamacase/golang/pkg/res"
 	"net/http"
 )
@@ -26,7 +27,12 @@ func NewAuthHandler(router *http.ServeMux, deps AuthHandlerDeps) {
 
 func (handler *AuthHandler) Login() http.HandlerFunc {
 	return func(rw http.ResponseWriter, request *http.Request) {
-		fmt.Println("Login Secret: ", handler.Config.Auth.Secret)
+		body, err := req.HandleBody[LoginRequest](&rw, request)
+		if err != nil {
+			return
+		}
+		fmt.Println(body)
+
 		loginResponse := LoginResponse{
 			Token: "1111",
 		}
@@ -38,6 +44,11 @@ func (handler *AuthHandler) Login() http.HandlerFunc {
 
 func (handler *AuthHandler) Register() http.HandlerFunc {
 	return func(rw http.ResponseWriter, request *http.Request) {
-		fmt.Println("Register Dsn: ", handler.Config.Db.Dsn)
+		body, err := req.HandleBody[RegisterRequest](&rw, request)
+		if err != nil {
+			return
+		}
+		fmt.Println(body)
+
 	}
 }
