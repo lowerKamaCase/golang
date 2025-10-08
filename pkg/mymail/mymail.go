@@ -1,7 +1,6 @@
 package mymail
 
 import (
-	"fmt"
 	"net/smtp"
 	"os"
 
@@ -16,8 +15,6 @@ func SendEmail(to string, text string) error {
 	password := os.Getenv("EMAIL_PASSWORD")
 
 	e.From = email
-
-	fmt.Println("From: ", e.From)
 
 	e.To = []string{to}
 

@@ -1,9 +1,9 @@
 package storage
 
 import (
-	"bufio"
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"sync"
 )
@@ -30,19 +30,17 @@ func (s *EmailStorage) Add(email, hash string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	file, err := os.OpenFile(s.filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	records, err := s.readAllRecords()
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	fmt.Println(records)
 
-	record := EmailHash{Email: email, Hash: hash}
-	jsonData, err := json.Marshal(record)
-	if err != nil {
-		return err
-	}
+	var updatedRecords []EmailHash
+	updatedRecords = append(updatedRecords, records...)
+	updatedRecords = append(updatedRecords, EmailHash{Email: email, Hash: hash})
 
-	_, err = file.WriteString(string(jsonData) + "\n")
+	s.writeAllRecords(updatedRecords)
 	return err
 }
 
@@ -173,8 +171,6 @@ func (s *EmailStorage) GetAll() (map[string]string, error) {
 
 // Вспомогательные методы
 func (s *EmailStorage) readAllRecords() ([]EmailHash, error) {
-	var records []EmailHash
-
 	file, err := os.Open(s.filename)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -184,21 +180,29 @@ func (s *EmailStorage) readAllRecords() ([]EmailHash, error) {
 	}
 	defer file.Close()
 
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		line := scanner.Text()
-		if line == "" {
-			continue
-		}
-
-		var record EmailHash
-		if err := json.Unmarshal([]byte(line), &record); err != nil {
-			continue
-		}
-		records = append(records, record)
+	data, err := io.ReadAll(file)
+	if err != nil {
+		return nil, err
 	}
 
-	return records, scanner.Err()
+	if len(data) == 0 {
+		return []EmailHash{}, nil
+	}
+
+	var recordsMap map[string]string
+	if err := json.Unmarshal(data, &recordsMap); err != nil {
+		return nil, err
+	}
+
+	var records []EmailHash
+	for email, hash := range recordsMap {
+		records = append(records, EmailHash{
+			Email: email,
+			Hash:  hash,
+		})
+	}
+
+	return records, nil
 }
 
 func (s *EmailStorage) writeAllRecords(records []EmailHash) error {
@@ -208,18 +212,23 @@ func (s *EmailStorage) writeAllRecords(records []EmailHash) error {
 	}
 	defer file.Close()
 
+	dataMap := make(map[string]string)
 	for _, record := range records {
-		jsonData, err := json.Marshal(record)
-		if err != nil {
-			return err
-		}
-		if _, err := file.WriteString(string(jsonData) + "\n"); err != nil {
-			return err
-		}
+		dataMap[record.Email] = record.Hash
+	}
+
+	jsonData, err := json.MarshalIndent(dataMap, "", "  ")
+	if err != nil {
+		return err
+	}
+
+	if _, err := file.Write(jsonData); err != nil {
+		return err
 	}
 
 	return nil
 }
+
 
 func (s *EmailStorage) Exists(email string) (bool, error) {
 	users, err := s.GetAll()

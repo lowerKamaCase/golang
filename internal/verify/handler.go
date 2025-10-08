@@ -54,6 +54,7 @@ func (verifier *Verifier) Send(es *storage.EmailStorage) http.HandlerFunc {
 			err = mymail.SendEmail(body.Email, localLink)
 			if err != nil {
 				res.Json(rw, err.Error(), 400)
+				return
 			}
 			res.Json(rw, "Success", 200)
 			return
@@ -72,6 +73,7 @@ func (verifier *Verifier) Send(es *storage.EmailStorage) http.HandlerFunc {
 		err = mymail.SendEmail(body.Email, localLink)
 		if err != nil {
 			res.Json(rw, err.Error(), 400)
+			return
 		}
 		res.Json(rw, "Success", 200)
 
