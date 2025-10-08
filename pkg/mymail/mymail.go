@@ -8,7 +8,7 @@ import (
 	"github.com/jordan-wright/email"
 )
 
-func SendEmail(to string, text string) {
+func SendEmail(to string, text string) error {
 	e := email.NewEmail()
 
 	email := os.Getenv("EMAIL")
@@ -30,5 +30,6 @@ func SendEmail(to string, text string) {
 		smtp.PlainAuth("", email, password, "smtp.yandex.ru"),
 	)
 
-	fmt.Println(err.Error())
+	return err
+
 }

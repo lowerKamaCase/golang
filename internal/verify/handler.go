@@ -37,36 +37,42 @@ func (verifier *Verifier) Send(es *storage.EmailStorage) http.HandlerFunc {
 	return func(rw http.ResponseWriter, request *http.Request) {
 		body, err := req.HandleBody[SendRequest](&rw, request)
 		if err != nil {
+			res.Json(rw, err.Error(), 400)
 			return
 		}
-		fmt.Println("Send: ", body)
 
 		exists, _ := es.Exists(body.Email)
 
 		if exists {
 			hash, err := es.GetHashByEmail(body.Email)
 			if err != nil {
+				res.Json(rw, err.Error(), 400)
 				return
 			}
-			localLink := fmt.Sprintf("http://localhost:8081/verify/%s", hash)
+			localLink := fmt.Sprintf("http://localhost:8087/verify/%s", hash)
 			fmt.Println("Local Link: ", localLink)
-			mymail.SendEmail(body.Email, localLink)
-
+			err = mymail.SendEmail(body.Email, localLink)
+			if err != nil {
+				res.Json(rw, err.Error(), 400)
+			}
+			res.Json(rw, "Success", 200)
 			return
 		}
 
 		randomHash, err := hash.GenerateRandomHash(10)
 		if err != nil {
+			res.Json(rw, err.Error(), 400)
 			return
 		}
-
-		fmt.Println(randomHash)
 
 		es.Add(body.Email, randomHash)
 
 		localLink := fmt.Sprintf("http://localhost:8081/verify/%s", randomHash)
-		fmt.Println("Local Link: ", localLink)
-		mymail.SendEmail(body.Email, localLink)
+
+		err = mymail.SendEmail(body.Email, localLink)
+		if err != nil {
+			res.Json(rw, err.Error(), 400)
+		}
 		res.Json(rw, "Success", 200)
 
 	}
@@ -81,9 +87,13 @@ func (verifier *Verifier) Verify(es *storage.EmailStorage) http.HandlerFunc {
 			return
 		}
 
-		es.DeleteByHash(hash)
+		err := es.DeleteByHash(hash)
 
-		res.Json(w, "Success Verification", 200)
+		if err != nil {
+			res.Json(w, false, 400)
+		}
+
+		res.Json(w, true, 200)
 
 	}
 }
