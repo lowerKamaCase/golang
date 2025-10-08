@@ -49,7 +49,7 @@ func (verifier *Verifier) Send(es *storage.EmailStorage) http.HandlerFunc {
 				res.Json(rw, err.Error(), 400)
 				return
 			}
-			localLink := fmt.Sprintf("http://localhost:8087/verify/%s", hash)
+			localLink := fmt.Sprintf("http://localhost:8081/verify/%s", hash)
 			fmt.Println("Local Link: ", localLink)
 			err = mymail.SendEmail(body.Email, localLink)
 			if err != nil {
@@ -68,7 +68,7 @@ func (verifier *Verifier) Send(es *storage.EmailStorage) http.HandlerFunc {
 
 		es.Add(body.Email, randomHash)
 
-		localLink := fmt.Sprintf("http://localhost:8087/verify/%s", randomHash)
+		localLink := fmt.Sprintf("http://localhost:8081/verify/%s", randomHash)
 
 		err = mymail.SendEmail(body.Email, localLink)
 		if err != nil {
