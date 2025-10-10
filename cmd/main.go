@@ -5,6 +5,7 @@ import (
 	"lowerkamacase/golang/configs"
 	"lowerkamacase/golang/internal/auth"
 	"lowerkamacase/golang/internal/verify"
+	"lowerkamacase/golang/pkg/product"
 	"net/http"
 )
 
@@ -28,6 +29,8 @@ func main() {
 	verify.NewVerifierHandler(serveMux, verify.VerifierDeps{
 		Config: conf,
 	})
+
+	product.NewProductHandler(serveMux, product.PostProductDeps{Config: conf})
 
 	Addr := fmt.Sprintf(":%d", PORT)
 
