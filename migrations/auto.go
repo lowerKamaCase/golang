@@ -2,6 +2,7 @@ package main
 
 import (
 	"lowerkamacase/golang/pkg/link"
+	"lowerkamacase/golang/pkg/product"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -21,4 +22,5 @@ func main() {
 	}
 
 	db.AutoMigrate(&link.Link{})
+	db.AutoMigrate(&product.Product{})
 }
