@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"lowerkamacase/golang/configs"
 	"lowerkamacase/golang/internal/auth"
-	"lowerkamacase/golang/internal/verify"
-	"lowerkamacase/golang/pkg/product"
+	"lowerkamacase/golang/pkg/db"
+	"lowerkamacase/golang/pkg/link"
 	"net/http"
 )
 
@@ -13,6 +13,7 @@ const PORT = 8081
 
 func main() {
 	conf := configs.LoadConfig()
+	database := db.NewDb(conf)
 	fmt.Println(conf)
 
 	if conf == nil {
@@ -20,17 +21,18 @@ func main() {
 		panic("Config cannot be nil")
 	}
 
+	// Repositories
+	linkRepository := link.NewLinkRepository(database)
+
 	serveMux := http.NewServeMux()
 
 	auth.NewAuthHandler(serveMux, auth.AuthHandlerDeps{
 		Config: conf,
 	})
 
-	verify.NewVerifierHandler(serveMux, verify.VerifierDeps{
-		Config: conf,
+	link.NewLinkHandler(serveMux, link.LinkHandlerDeps{
+		LinkRepository: linkRepository,
 	})
-
-	product.NewProductHandler(serveMux, product.PostProductDeps{Config: conf})
 
 	Addr := fmt.Sprintf(":%d", PORT)
 
