@@ -44,11 +44,11 @@ func main() {
 	Addr := fmt.Sprintf(":%d", PORT)
 
 	stackMiddlewaresFn := middleware.Chain(
-		middleware.Logging,
 		middleware.CORS,
+		middleware.Logging,
 	)
 	server := http.Server{
-		Addr: Addr,
+		Addr:    Addr,
 		Handler: stackMiddlewaresFn(serveMux),
 	}
 
