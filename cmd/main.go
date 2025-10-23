@@ -6,6 +6,7 @@ import (
 	"lowerkamacase/golang/internal/auth"
 	"lowerkamacase/golang/pkg/db"
 	"lowerkamacase/golang/pkg/link"
+	"lowerkamacase/golang/pkg/middleware"
 	"lowerkamacase/golang/pkg/product"
 	"net/http"
 )
@@ -42,9 +43,13 @@ func main() {
 
 	Addr := fmt.Sprintf(":%d", PORT)
 
+	stackMiddlewaresFn := middleware.Chain(
+		middleware.Logging,
+		middleware.CORS,
+	)
 	server := http.Server{
-		Addr:    Addr,
-		Handler: serveMux,
+		Addr: Addr,
+		Handler: stackMiddlewaresFn(serveMux),
 	}
 
 	fmt.Println("Server started at port: ", PORT)
