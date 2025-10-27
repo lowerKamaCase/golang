@@ -1,8 +1,8 @@
 package main
 
 import (
+	"lowerkamacase/golang/internal/user"
 	"lowerkamacase/golang/pkg/link"
-	"lowerkamacase/golang/pkg/product"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -21,6 +21,5 @@ func main() {
 		panic(err.Error())
 	}
 
-	db.AutoMigrate(&link.Link{})
-	db.AutoMigrate(&product.Product{})
+	db.AutoMigrate(&link.Link{}, &user.User{})
 }
