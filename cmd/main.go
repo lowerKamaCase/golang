@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"lowerkamacase/golang/configs"
 	"lowerkamacase/golang/internal/auth"
+	"lowerkamacase/golang/internal/user"
 	"lowerkamacase/golang/pkg/db"
 	"lowerkamacase/golang/pkg/link"
 	"lowerkamacase/golang/pkg/middleware"
@@ -26,11 +27,16 @@ func main() {
 	// Repositories
 	linkRepository := link.NewLinkRepository(database)
 	productRepository := product.NewProductRepository(database)
+	userRepository := user.NewUserRepository(database)
+
+	// Services
+	authService := auth.NewAuthService(userRepository)
 
 	serveMux := http.NewServeMux()
 
 	auth.NewAuthHandler(serveMux, auth.AuthHandlerDeps{
 		Config: conf,
+		AuthService: authService,
 	})
 
 	link.NewLinkHandler(serveMux, link.LinkHandlerDeps{
