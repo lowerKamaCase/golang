@@ -1,6 +1,8 @@
 package link
 
 import (
+	"fmt"
+	"lowerkamacase/golang/configs"
 	"lowerkamacase/golang/pkg/middleware"
 	"lowerkamacase/golang/pkg/req"
 	"lowerkamacase/golang/pkg/res"
@@ -12,6 +14,7 @@ import (
 
 type LinkHandlerDeps struct {
 	LinkRepository *LinkRepository
+	Config *configs.Config
 }
 
 type LinkHandler struct {
@@ -23,7 +26,7 @@ func NewLinkHandler(router *http.ServeMux, deps LinkHandlerDeps) {
 		LinkRepository: deps.LinkRepository,
 	}
 	router.HandleFunc("POST /link", handler.Create())
-	router.Handle("PATCH /link/{id}", middleware.IsAuthed(handler.Update()))
+	router.Handle("PATCH /link/{id}", middleware.IsAuthed(handler.Update(), deps.Config))
 	router.HandleFunc("DELETE /link/{id}", handler.Delete())
 	router.HandleFunc("GET /link/{hash}", handler.GoTo())
 }
@@ -54,13 +57,17 @@ func (handler *LinkHandler) Create() http.HandlerFunc {
 }
 
 func (handler *LinkHandler) Update() http.HandlerFunc {
-	return func(w http.ResponseWriter, request *http.Request) {
-		body, err := req.HandleBody[LinkUpdateRequest](&w, request)
+	return func(w http.ResponseWriter, r *http.Request) {
+		email, ok := r.Context().Value(middleware.ContextEmailKey).(string)
+		if ok {
+			fmt.Println(email)
+		}
+		body, err := req.HandleBody[LinkUpdateRequest](&w, r)
 		if err != nil {
 			return
 		}
 
-		idString := request.PathValue("id")
+		idString := r.PathValue("id")
 		id, err := strconv.ParseUint(idString, 10, 32)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)

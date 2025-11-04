@@ -35,12 +35,13 @@ func main() {
 	serveMux := http.NewServeMux()
 
 	auth.NewAuthHandler(serveMux, auth.AuthHandlerDeps{
-		Config: conf,
+		Config:      conf,
 		AuthService: authService,
 	})
 
 	link.NewLinkHandler(serveMux, link.LinkHandlerDeps{
 		LinkRepository: linkRepository,
+		Config:         conf,
 	})
 
 	product.NewProductHandler(serveMux, product.ProductHandlerDeps{
