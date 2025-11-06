@@ -3,6 +3,7 @@ package main
 import (
 	"lowerkamacase/golang/internal/user"
 	"lowerkamacase/golang/pkg/link"
+	"lowerkamacase/golang/pkg/stat"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -21,5 +22,5 @@ func main() {
 		panic(err.Error())
 	}
 
-	db.AutoMigrate(&link.Link{}, &user.User{})
+	db.AutoMigrate(&link.Link{}, &user.User{}, &stat.Stat{})
 }
