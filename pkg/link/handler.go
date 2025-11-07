@@ -6,6 +6,7 @@ import (
 	"lowerkamacase/golang/pkg/middleware"
 	"lowerkamacase/golang/pkg/req"
 	"lowerkamacase/golang/pkg/res"
+	"lowerkamacase/golang/pkg/stat"
 	"net/http"
 	"strconv"
 
@@ -14,16 +15,19 @@ import (
 
 type LinkHandlerDeps struct {
 	LinkRepository *LinkRepository
+	StatRepository *stat.StatRepository
 	Config         *configs.Config
 }
 
 type LinkHandler struct {
 	LinkRepository *LinkRepository
+	StatRepository *stat.StatRepository
 }
 
 func NewLinkHandler(router *http.ServeMux, deps LinkHandlerDeps) {
 	handler := &LinkHandler{
 		LinkRepository: deps.LinkRepository,
+		StatRepository: deps.StatRepository,
 	}
 	router.HandleFunc("POST /link", handler.Create())
 	router.Handle("PATCH /link/{id}", middleware.IsAuthed(handler.Update(), deps.Config))
@@ -118,6 +122,7 @@ func (handler *LinkHandler) GoTo() http.HandlerFunc {
 			http.Error(rw, err.Error(), http.StatusNotFound)
 			return
 		}
+		handler.StatRepository.AddClick(link.ID)
 		http.Redirect(rw, request, link.Url, http.StatusTemporaryRedirect)
 	}
 }

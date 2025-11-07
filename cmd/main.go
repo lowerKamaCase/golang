@@ -8,7 +8,7 @@ import (
 	"lowerkamacase/golang/pkg/db"
 	"lowerkamacase/golang/pkg/link"
 	"lowerkamacase/golang/pkg/middleware"
-	"lowerkamacase/golang/pkg/product"
+	"lowerkamacase/golang/pkg/stat"
 	"net/http"
 )
 
@@ -26,8 +26,8 @@ func main() {
 
 	// Repositories
 	linkRepository := link.NewLinkRepository(database)
-	productRepository := product.NewProductRepository(database)
 	userRepository := user.NewUserRepository(database)
+	statRepository := stat.NewStatRepository(database)
 
 	// Services
 	authService := auth.NewAuthService(userRepository)
@@ -41,11 +41,8 @@ func main() {
 
 	link.NewLinkHandler(serveMux, link.LinkHandlerDeps{
 		LinkRepository: linkRepository,
+		StatRepository: statRepository,
 		Config:         conf,
-	})
-
-	product.NewProductHandler(serveMux, product.ProductHandlerDeps{
-		ProductRepository: productRepository,
 	})
 
 	Addr := fmt.Sprintf(":%d", PORT)
