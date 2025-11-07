@@ -3,25 +3,27 @@ package link
 import (
 	"fmt"
 	"lowerkamacase/golang/configs"
+	"lowerkamacase/golang/pkg/di"
 	"lowerkamacase/golang/pkg/middleware"
 	"lowerkamacase/golang/pkg/req"
 	"lowerkamacase/golang/pkg/res"
-	"lowerkamacase/golang/pkg/stat"
 	"net/http"
 	"strconv"
 
 	"gorm.io/gorm"
 )
 
+
+
 type LinkHandlerDeps struct {
 	LinkRepository *LinkRepository
-	StatRepository *stat.StatRepository
+	StatRepository di.IStatRepository
 	Config         *configs.Config
 }
 
 type LinkHandler struct {
 	LinkRepository *LinkRepository
-	StatRepository *stat.StatRepository
+	StatRepository di.IStatRepository
 }
 
 func NewLinkHandler(router *http.ServeMux, deps LinkHandlerDeps) {
