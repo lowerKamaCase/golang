@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"gorm.io/datatypes"
+	"gorm.io/gorm"
 )
 
 type StatRepository struct {
@@ -52,8 +53,10 @@ func (repo *StatRepository) GetStats(by string, from, to time.Time) []GetStatRes
 		}
 	}
 
-	repo.Table("stats").
-		Select(selectQuery).
+	query := repo.Table("stats").
+		Select(selectQuery).Session(&gorm.Session{})
+
+	query.
 		Where("date between ? and ?", from, to).
 		Group("period").
 		Order("period").
