@@ -3,7 +3,7 @@ package link
 import (
 	"fmt"
 	"lowerkamacase/golang/configs"
-	"lowerkamacase/golang/pkg/di"
+	"lowerkamacase/golang/pkg/event"
 	"lowerkamacase/golang/pkg/middleware"
 	"lowerkamacase/golang/pkg/req"
 	"lowerkamacase/golang/pkg/res"
@@ -13,23 +13,24 @@ import (
 	"gorm.io/gorm"
 )
 
-
-
 type LinkHandlerDeps struct {
+	// StatRepository di.IStatRepository
 	LinkRepository *LinkRepository
-	StatRepository di.IStatRepository
 	Config         *configs.Config
+	EventBus       *event.EventBus
 }
 
 type LinkHandler struct {
 	LinkRepository *LinkRepository
-	StatRepository di.IStatRepository
+	EventBus       *event.EventBus
+	// StatRepository di.IStatRepository
 }
 
 func NewLinkHandler(router *http.ServeMux, deps LinkHandlerDeps) {
 	handler := &LinkHandler{
 		LinkRepository: deps.LinkRepository,
-		StatRepository: deps.StatRepository,
+		EventBus:       deps.EventBus,
+		// StatRepository: deps.StatRepository,
 	}
 	router.HandleFunc("POST /link", handler.Create())
 	router.Handle("PATCH /link/{id}", middleware.IsAuthed(handler.Update(), deps.Config))
@@ -124,7 +125,11 @@ func (handler *LinkHandler) GoTo() http.HandlerFunc {
 			http.Error(rw, err.Error(), http.StatusNotFound)
 			return
 		}
-		handler.StatRepository.AddClick(link.ID)
+		// handler.StatRepository.AddClick(link.ID)
+		go handler.EventBus.Publish(event.Event{
+			Type: event.EventLinkVisited,
+			Data: link.ID,
+		})
 		http.Redirect(rw, request, link.Url, http.StatusTemporaryRedirect)
 	}
 }

@@ -6,6 +6,7 @@ import (
 	"lowerkamacase/golang/internal/auth"
 	"lowerkamacase/golang/internal/user"
 	"lowerkamacase/golang/pkg/db"
+	"lowerkamacase/golang/pkg/event"
 	"lowerkamacase/golang/pkg/link"
 	"lowerkamacase/golang/pkg/middleware"
 	"lowerkamacase/golang/pkg/stat"
@@ -19,6 +20,8 @@ func main() {
 	database := db.NewDb(conf)
 	fmt.Println(conf)
 
+	eventBus := event.NewEventBus()
+
 	if conf == nil {
 		fmt.Print("Config cannot be nil")
 		panic("Config cannot be nil")
@@ -31,16 +34,24 @@ func main() {
 
 	// Services
 	authService := auth.NewAuthService(userRepository)
+	statService := stat.NewStatService(&stat.StatServiceDeps{
+		EventBus:       eventBus,
+		StatRepository: statRepository,
+	})
 
 	serveMux := http.NewServeMux()
 
+	// Handlers
 	auth.NewAuthHandler(serveMux, auth.AuthHandlerDeps{
 		Config:      conf,
 		AuthService: authService,
 	})
-
 	link.NewLinkHandler(serveMux, link.LinkHandlerDeps{
 		LinkRepository: linkRepository,
+		Config:         conf,
+		EventBus:       eventBus,
+	})
+	stat.NewStatHandler(serveMux, stat.StatHandlerDeps{
 		StatRepository: statRepository,
 		Config:         conf,
 	})
@@ -63,5 +74,7 @@ func main() {
 	if err != nil {
 		panic(err.Error())
 	}
+
+	go statService.AddClick()
 
 }
